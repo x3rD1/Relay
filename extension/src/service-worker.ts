@@ -14,18 +14,32 @@ chrome.runtime.onMessage.addListener((message) => {
 
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
-    chrome.tabs.query({ url: "https://example.com/*" }, (tabs) => {
+    chrome.tabs.query({ url: "https://example.com/*" }, async (tabs) => {
       const tab = tabs[0];
-      if (!tab.id) return;
+      if (!(tab && tab.id)) {
+        sendResponse({
+          success: false,
+          error: "Specified tab does not exist",
+        });
+        return;
+      }
 
-      chrome.tabs.sendMessage(tab.id, message, (response) => {
-        const { lastError: err } = chrome.runtime;
-        if (err) {
-          sendResponse(`Error: ${err.message}`);
+      try {
+        const res = await chrome.tabs.sendMessage(tab.id, message);
+
+        if (res.error) {
+          sendResponse({ success: false, error: res.error });
           return;
         }
-        sendResponse(response);
-      });
+
+        sendResponse({ success: true, data: res.data });
+      } catch (error) {
+        console.error(error);
+        sendResponse({
+          success: false,
+          error: "Unable to reach content script",
+        });
+      }
     });
 
     return true;

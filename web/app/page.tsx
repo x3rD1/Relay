@@ -15,14 +15,13 @@ export default function Home() {
         message: "hello from next",
       },
       (response) => {
-        const { lastError: err } = chrome.runtime;
-        if (err) {
-          console.error(err);
+        if (!response.success) {
+          console.error(response.error);
           setHasOverlay((prev) => !prev);
           return;
         }
 
-        console.log(response);
+        console.log(response.data);
       },
     );
   };
