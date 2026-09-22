@@ -4,6 +4,8 @@ import { injectOverlay, isOverlayRemoved } from "./utils/uiManager";
 
 let rootOverlay: Root | null = null;
 
+chrome.runtime.sendMessage({ action: "content-ready" });
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === "show-overlay") {
     const overlay = injectOverlay();
@@ -21,6 +23,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     rootOverlay = root;
 
     sendResponse({ success: true, data: "Overlay has been created" });
+    chrome.storage.local.set({ listening: true });
   }
 
   if (message.action === "remove-overlay") {
@@ -37,5 +40,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     rootOverlay = null;
 
     sendResponse({ success: true, data: "Overlay has been removed" });
+    chrome.storage.local.set({ listening: false });
   }
 });
