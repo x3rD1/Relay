@@ -5,41 +5,44 @@ import { notifyContentReady } from "./utils/contentReady";
 
 let rootOverlay: Root | null = null;
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.action === "show-overlay") {
-    const overlay = injectOverlay();
-    if (!overlay) {
-      sendResponse({
-        success: false,
-        error: "Element with a class name reoverlay already exist",
-      });
-      return;
+chrome.runtime.onMessage.addListener(async (message) => {
+  switch (message.action) {
+    case "show-overlay": {
+      const overlay = injectOverlay();
+      if (!overlay) {
+        return {
+          success: false,
+          error: "Element with a class name reoverlay already exist",
+        };
+      }
+
+      const root = createRoot(overlay);
+      root.render(<Overlay />);
+
+      rootOverlay = root;
+
+      await chrome.storage.local.set({ listening: true });
+      return { success: true, data: "Overlay has been created" };
     }
 
-    const root = createRoot(overlay);
-    root.render(<Overlay />);
+    case "remove-overlay": {
+      if (!isOverlayRemoved()) {
+        return {
+          success: false,
+          error:
+            "Unable to remove overlay. Element with class name reoverlay does not exist",
+        };
+      }
 
-    rootOverlay = root;
+      rootOverlay?.unmount();
+      rootOverlay = null;
 
-    sendResponse({ success: true, data: "Overlay has been created" });
-    chrome.storage.local.set({ listening: true });
-  }
-
-  if (message.action === "remove-overlay") {
-    if (!isOverlayRemoved()) {
-      sendResponse({
-        success: false,
-        error:
-          "Unable to remove overlay. Element with class name reoverlay does not exist",
-      });
-      return;
+      await chrome.storage.local.set({ listening: false });
+      return { success: true, data: "Overlay has been removed" };
     }
 
-    rootOverlay?.unmount();
-    rootOverlay = null;
-
-    sendResponse({ success: true, data: "Overlay has been removed" });
-    chrome.storage.local.set({ listening: false });
+    default:
+      break;
   }
 });
 
