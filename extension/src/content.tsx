@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
     }
 
     default:
-      break;
+      return { success: false, error: "Unknown action" };
   }
 });
 
