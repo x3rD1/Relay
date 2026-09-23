@@ -1,6 +1,7 @@
+import type { Message, MsgResponse } from "./types/messages";
 import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
-chrome.runtime.onMessage.addListener(async (message, sender) => {
+chrome.runtime.onMessage.addListener(async (message: Message, sender) => {
   if (message.action === "content-ready") {
     if (sender.tab?.id == null) {
       return { success: false, error: "Failed to query the specified tab" };
@@ -29,31 +30,33 @@ chrome.runtime.onMessage.addListener(async (message, sender) => {
   }
 });
 
-chrome.runtime.onMessageExternal.addListener(async (message) => {
-  let { tabId } = (await chrome.storage.local.get("tabId")) as {
-    tabId: number;
-  };
+chrome.runtime.onMessageExternal.addListener(
+  async (message: Message): Promise<MsgResponse | undefined> => {
+    let { tabId } = (await chrome.storage.local.get("tabId")) as {
+      tabId: number;
+    };
 
-  if (tabId == null) {
-    const tab = await getTabByUrl("https://example.com/*");
-    if (!(tab && tab.id)) {
-      return {
-        success: false,
-        error: "Failed to query the specified tab",
-      };
+    if (tabId == null) {
+      const tab = await getTabByUrl("https://example.com/*");
+      if (!(tab && tab.id)) {
+        return {
+          success: false,
+          error: "Failed to query the specified tab",
+        };
+      }
+
+      tabId = tab.id;
+      chrome.storage.local.set({ tabId });
     }
 
-    tabId = tab.id;
-    chrome.storage.local.set({ tabId });
-  }
+    const response = await sendMessageToTab(tabId, message);
+    if (response.error) {
+      return { success: false, error: response.error };
+    }
 
-  const response = await sendMessageToTab(tabId, message);
-  if (response.error) {
-    return { success: false, error: response.error };
-  }
-
-  return response;
-});
+    return response;
+  },
+);
 
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const targetTab = await chrome.storage.local.get("tabId");

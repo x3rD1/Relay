@@ -1,3 +1,5 @@
+import type { MsgResponse } from "../types/messages";
+
 export async function getTabByUrl(
   tabUrl: string,
 ): Promise<chrome.tabs.Tab | null> {
@@ -13,7 +15,7 @@ export async function getTabByUrl(
 export async function sendMessageToTab(
   tabId: number,
   message: Record<string, unknown>,
-): Promise<{ success: boolean; data?: unknown; error?: string }> {
+): Promise<MsgResponse> {
   try {
     const response = await chrome.tabs.sendMessage(tabId, message);
     return { success: true, data: response?.data ?? response };

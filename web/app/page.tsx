@@ -12,7 +12,6 @@ export default function Home() {
       "bgpdmdnaeieaibnjeepehjllhabchiep",
       {
         action: hasOverlay ? "remove-overlay" : "show-overlay",
-        message: "hello from next",
       },
       (response) => {
         if (!response.success) {

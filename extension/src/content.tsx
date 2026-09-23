@@ -2,10 +2,11 @@ import { createRoot, type Root } from "react-dom/client";
 import Overlay from "./components/Overlay";
 import { injectOverlay, isOverlayRemoved } from "./utils/uiManager";
 import { notifyContentReady } from "./utils/contentReady";
+import type { Message } from "./types/messages";
 
 let rootOverlay: Root | null = null;
 
-chrome.runtime.onMessage.addListener(async (message) => {
+chrome.runtime.onMessage.addListener(async (message: Message) => {
   switch (message.action) {
     case "show-overlay": {
       const overlay = injectOverlay();
