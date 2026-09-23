@@ -2,14 +2,30 @@ import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
 chrome.runtime.onMessage.addListener(async (message, sender) => {
   if (message.action === "content-ready") {
-    const isListening = await chrome.storage.local.get("listening");
-    if (!isListening.listening) return;
-
     if (sender.tab?.id == null) {
       return { success: false, error: "Failed to query the specified tab" };
     }
 
-    sendMessageToTab(sender.tab.id, { action: "show-overlay" }); // TODO: Might throw an error need to catch
+    const { listening, tabId } = (await chrome.storage.local.get([
+      "listening",
+      "tabId",
+    ])) as { listening: boolean; tabId: number | null };
+    if (!listening) return;
+
+    if (tabId !== null && tabId !== sender.tab.id) {
+      return;
+    }
+
+    if (tabId === null) {
+      await chrome.storage.local.set({ tabId: sender.tab.id });
+    }
+
+    try {
+      await sendMessageToTab(sender.tab.id, { action: "show-overlay" });
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: "Unable to restore overlay" };
+    }
   }
 });
 
@@ -37,4 +53,11 @@ chrome.runtime.onMessageExternal.addListener(async (message) => {
   }
 
   return response;
+});
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const targetTab = await chrome.storage.local.get("tabId");
+  if (targetTab.tabId !== tabId) return;
+
+  chrome.storage.local.set({ tabId: null });
 });
