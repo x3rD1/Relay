@@ -1,10 +1,9 @@
 import { createRoot, type Root } from "react-dom/client";
 import Overlay from "./components/Overlay";
 import { injectOverlay, isOverlayRemoved } from "./utils/uiManager";
+import { notifyContentReady } from "./utils/contentReady";
 
 let rootOverlay: Root | null = null;
-
-chrome.runtime.sendMessage({ action: "content-ready" });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === "show-overlay") {
@@ -43,3 +42,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     chrome.storage.local.set({ listening: false });
   }
 });
+
+// Sends message to service-worker with an action type "content-ready"
+notifyContentReady();
