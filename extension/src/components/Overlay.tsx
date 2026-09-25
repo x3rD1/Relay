@@ -1,5 +1,6 @@
 import { useDialogVisible } from "../hooks/useDialogVisible";
 import { useUpdateResponse } from "../hooks/useUpdateResponse";
+import ResponseDialog from "./ResponseDialog";
 
 export default function Overlay() {
   const { dialogVisible, toggleDialog } = useDialogVisible();
@@ -32,7 +33,7 @@ export default function Overlay() {
           _
         </button>
 
-        {response && response}
+        {response && <ResponseDialog response={response} />}
       </div>
 
       <button
