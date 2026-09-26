@@ -1,3 +1,5 @@
+import { closeOffscreen } from "./background/removeOffscreen";
+import { setupTabCapture } from "./background/tabCapture";
 import type { Message, MsgResponse } from "./types/messages";
 import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
@@ -64,3 +66,9 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 
   chrome.storage.local.set({ tabId: null });
 });
+
+// Register tab capture listener
+setupTabCapture();
+
+// Register offscreen document close handler
+closeOffscreen();

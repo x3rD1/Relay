@@ -19,7 +19,7 @@ export default defineManifest({
     type: "module",
   },
 
-  permissions: ["storage"],
+  permissions: ["storage", "tabCapture", "activeTab", "offscreen"],
 
   host_permissions: ["http://localhost:3000/*", "https://example.com/*"],
 
