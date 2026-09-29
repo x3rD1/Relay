@@ -25,6 +25,7 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
     // Connect to Deepgram's WebSocket using token and get its reference
     const socket = await connectToDeepgram(token, sendTranscript);
 
+    // Callback on what to do with the pcm chunk
     const handlePcmChunk = (chunk: Int16Array) => {
       if (isSpeaking) {
         socket.send(chunk.buffer as ArrayBuffer);
@@ -37,6 +38,7 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
       }
     };
 
+    // Get raw PCM audio
     await startAudioProcessor(stream, handlePcmChunk);
 
     const onSpeechStart = () => {
@@ -59,6 +61,7 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
       console.log("SPEECH END");
     };
 
+    // Decide when to send chunk.buffer to the socket
     await startVAD(stream, onSpeechStart, onVADMisfire, onSpeechEnd);
   }
 
