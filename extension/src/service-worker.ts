@@ -1,34 +1,17 @@
-import { closeOffscreen } from "./background/removeOffscreen";
+import { restoreOverlayOnContentReady } from "./background/restoreOverlay";
 import { setupTabCapture } from "./background/tabCapture";
 import type { Message, MsgResponse } from "./types/messages";
 import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
 chrome.runtime.onMessage.addListener(async (message: Message, sender) => {
   if (message.action === "content-ready") {
-    if (sender.tab?.id == null) {
-      return { success: false, error: "Failed to query the specified tab" };
-    }
+    // Keep the overlay persistent on refresh
+    await restoreOverlayOnContentReady(sender);
+  }
 
-    const { listening, tabId } = (await chrome.storage.local.get([
-      "listening",
-      "tabId",
-    ])) as { listening: boolean; tabId: number | null };
-    if (!listening) return;
-
-    if (tabId !== null && tabId !== sender.tab.id) {
-      return;
-    }
-
-    if (tabId === null) {
-      await chrome.storage.local.set({ tabId: sender.tab.id });
-    }
-
-    try {
-      await sendMessageToTab(sender.tab.id, { action: "show-overlay" });
-    } catch (err) {
-      console.error(err);
-      return { success: false, error: "Unable to restore overlay" };
-    }
+  if (message.action === "close-offscreen") {
+    console.log("closing offscreen");
+    chrome.offscreen.closeDocument();
   }
 });
 
@@ -69,6 +52,3 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 
 // Register tab capture listener
 setupTabCapture();
-
-// Register offscreen document close handler
-closeOffscreen();
