@@ -1,11 +1,13 @@
 let socket: WebSocket | null = null;
 
+let keepAliveTimer: ReturnType<typeof setInterval> | null = null;
+
 export function connectToDeepgram(
   token: string,
   sendTranscript: (transcript: string) => Promise<void>,
 ): Promise<WebSocket> {
   const ws = new WebSocket(
-    "wss://api.deepgram.com/v2/listen?model=flux-general-en",
+    "wss://api.deepgram.com/v2/listen?model=flux-general-en&encoding=linear16&sample_rate=16000",
     ["bearer", token],
   );
 
@@ -14,6 +16,8 @@ export function connectToDeepgram(
   return new Promise((resolve, reject) => {
     ws.addEventListener("open", () => {
       console.log("DEEPGRAM CONNECTED");
+      startKeepAlive(ws);
+
       resolve(ws);
     });
 
@@ -53,6 +57,11 @@ export function connectToDeepgram(
 
 export function closeDeepgram(): Promise<void> {
   return new Promise((resolve) => {
+    if (keepAliveTimer !== null) {
+      clearInterval(keepAliveTimer);
+      keepAliveTimer = null;
+    }
+
     if (!socket || socket.readyState === WebSocket.CLOSED) {
       resolve();
       return;
@@ -69,4 +78,11 @@ export function closeDeepgram(): Promise<void> {
 
     socket.send(JSON.stringify({ type: "CloseStream" }));
   });
+}
+
+function startKeepAlive(socket: WebSocket) {
+  keepAliveTimer = setInterval(() => {
+    const silence = new Int16Array(1);
+    socket.send(silence.buffer);
+  }, 1000 * 8);
 }

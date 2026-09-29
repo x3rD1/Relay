@@ -1,17 +1,16 @@
 import type { Message } from "../types/messages";
 import { getTempToken } from "../utils/getTempToken";
-import { closeDeepgram, connectToDeepgram } from "./deepgram";
+import {
+  preRollBuffer,
+  startAudioProcessor,
+  startStream,
+  stopStream,
+} from "./audioSession";
+import { connectToDeepgram } from "./deepgram";
 import { sendTranscript } from "./transcript";
+import { startVAD } from "./vad";
 
-type ChromeTabCaptureConstraints = MediaTrackConstraints & {
-  mandatory: {
-    chromeMediaSource: "tab";
-    chromeMediaSourceId: string;
-  };
-};
-
-let stream: MediaStream | null = null;
-let recorder: MediaRecorder | null = null;
+let isSpeaking = false;
 
 chrome.runtime.sendMessage({
   action: "offscreen-ready",
@@ -19,53 +18,52 @@ chrome.runtime.sendMessage({
 
 chrome.runtime.onMessage.addListener(async (message: Message) => {
   if (message.action === "consume-stream") {
-    const audio: ChromeTabCaptureConstraints = {
-      mandatory: {
-        chromeMediaSource: "tab",
-        chromeMediaSourceId: message.streamId!,
-      },
-    };
+    const stream = await startStream(message.streamId!);
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio,
-      video: false,
-    });
-
+    // Create a temporary Deepgram token
     const token = await getTempToken();
-
+    // Connect to Deepgram's WebSocket using token and get its reference
     const socket = await connectToDeepgram(token, sendTranscript);
 
-    recorder = new MediaRecorder(stream);
-    recorder.addEventListener("dataavailable", (event: BlobEvent) => {
-      socket.send(event.data);
-    });
+    const handlePcmChunk = (chunk: Int16Array) => {
+      if (isSpeaking) {
+        socket.send(chunk.buffer as ArrayBuffer);
+      } else {
+        if (preRollBuffer.length === 5) {
+          preRollBuffer.shift();
+        }
 
-    recorder.start(1000);
+        preRollBuffer.push(chunk);
+      }
+    };
+
+    await startAudioProcessor(stream, handlePcmChunk);
+
+    const onSpeechStart = () => {
+      isSpeaking = true;
+
+      for (const chunk of preRollBuffer) {
+        socket.send(chunk.buffer as ArrayBuffer);
+      }
+
+      preRollBuffer.length = 0;
+    };
+
+    const onVADMisfire = () => {
+      isSpeaking = false;
+      preRollBuffer.length = 0;
+    };
+
+    const onSpeechEnd = () => {
+      isSpeaking = false;
+      console.log("SPEECH END");
+    };
+
+    await startVAD(stream, onSpeechStart, onVADMisfire, onSpeechEnd);
   }
 
   if (message.action === "stop-capture") {
-    if (recorder === null || stream === null) return;
-
-    const currentRecorder = recorder;
-    const currentStream = stream;
-
-    const recorderStopped = new Promise<void>((resolve) => {
-      currentRecorder.addEventListener("stop", () => resolve(), { once: true });
-    });
-
-    currentRecorder.stop();
-    currentStream.getTracks().forEach((track) => track.stop());
-
-    await recorderStopped;
-
-    recorder = null;
-    stream = null;
-
-    console.log("recorder stopped");
-
-    await closeDeepgram();
-
-    console.log("close Deepgram stream");
+    await stopStream();
 
     // Notify the service worker that media cleanup is complete
     chrome.runtime.sendMessage({ action: "close-offscreen" });
