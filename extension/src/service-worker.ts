@@ -39,7 +39,7 @@ chrome.runtime.onMessageExternal.addListener(
     };
 
     if (tabId == null) {
-      const tab = await getTabByUrl("https://example.com/*");
+      const tab = await getTabByUrl("https://*.youtube.com/watch*");
       if (!(tab && tab.id)) {
         return {
           success: false,

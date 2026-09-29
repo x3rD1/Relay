@@ -11,7 +11,10 @@ export default defineManifest({
   },
 
   content_scripts: [
-    { matches: ["https://example.com/*"], js: ["src/content.tsx"] },
+    {
+      matches: ["https://*.youtube.com/*"],
+      js: ["src/content.tsx"],
+    },
   ],
 
   background: {
@@ -21,7 +24,7 @@ export default defineManifest({
 
   permissions: ["storage", "tabCapture", "activeTab", "offscreen"],
 
-  host_permissions: ["http://localhost:3000/*", "https://example.com/*"],
+  host_permissions: ["http://localhost:3000/*", "https://*.youtube.com/*"],
 
   externally_connectable: {
     matches: ["http://localhost:3000/*"],
