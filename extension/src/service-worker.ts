@@ -13,6 +13,16 @@ chrome.runtime.onMessage.addListener(async (message: Message, sender) => {
     console.log("closing offscreen");
     chrome.offscreen.closeDocument();
   }
+
+  if (message.action === "update-response") {
+    const { tabId } = (await chrome.storage.local.get("tabId")) as {
+      tabId: number | null;
+    };
+
+    if (tabId == null) return;
+
+    await sendMessageToTab(tabId, message);
+  }
 });
 
 chrome.runtime.onMessageExternal.addListener(
