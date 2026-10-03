@@ -1,12 +1,19 @@
 import { analyzeTranscript } from "@/lib/jev";
 import { activeWorkflow, workflow } from "@/lib/workflow";
 
+const customerContext: string[] = [];
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { transcript }: { transcript: string } = body;
 
-    const jevResponse = await analyzeTranscript(transcript, activeWorkflow);
+    customerContext.push(transcript);
+
+    const jevResponse = await analyzeTranscript(
+      customerContext,
+      activeWorkflow,
+    );
 
     const llmResponse = await workflow(transcript, jevResponse);
 

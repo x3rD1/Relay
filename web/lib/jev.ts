@@ -4,7 +4,7 @@ const API_KEY = process.env.JEV_API_KEY;
 const JEV_MODEL = "jev-latest";
 
 export async function analyzeTranscript(
-  transcript: string,
+  transcripts: string[],
   activeWorkflow: string,
 ) {
   if (!TYPESAFE_API_URL)
@@ -12,7 +12,7 @@ export async function analyzeTranscript(
   if (!API_KEY)
     throw new Error("Configuration Error: JEV_API_KEY is not defined");
 
-  console.log("TRANSCRIPT:", transcript);
+  console.log("TRANSCRIPT:", transcripts[transcripts.length - 1]);
   try {
     const response = await fetch(TYPESAFE_API_URL, {
       method: "POST",
@@ -22,7 +22,7 @@ export async function analyzeTranscript(
       },
       body: JSON.stringify({
         model: JEV_MODEL,
-        state: transcript,
+        state: transcripts,
         questions: {
           topic: {
             type: "choice",
@@ -32,21 +32,27 @@ export async function analyzeTranscript(
             If there is an active workflow, treat messages that answer, provide information requested by, 
             or otherwise continue the current workflow as belonging to that workflow, 
             even if the message itself does not mention the workflow topic.
-            Only classify the message as "other" when it does not continue the current workflow and 
-            does not introduce a recognizable different workflow.`,
+
+            What workflow does the customer's latest request belong to?
+            `,
             criteria: {
-              pools: "There is an issue with the pool",
-              trees: "There is an issue with the christmas tree",
-              refund: "Customer wants a refund.",
-              other: "This is just a normal conversation",
+              pools:
+                "The customer needs help with a pool-related issue or request.",
+              trees:
+                "The customer needs help with a Christmas-tree-related issue or request.",
+              refund:
+                "The customer is requesting a refund, return, cancellation, or reversal of a purchase.",
+              general:
+                "The customer is asking for general information or assistance that is not specific to the other available workflows.",
             },
           },
 
           is_topic_change: {
             type: "noul",
             instructions: `
+            Workflow available: pools, trees, refund, general.
             Current workflow: ${activeWorkflow}
-            Does this message introduce a new customer-service issue/topic that is different from the current workflow?
+            Does the latest message indicate that we should switch away from the current workflow?
             `,
           },
         },
