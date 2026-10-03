@@ -12,8 +12,10 @@ export async function POST(request: Request) {
 
     console.log(llmResponse);
 
-    return new Response(null, { status: 204 });
+    return Response.json({ success: true, data: llmResponse });
   } catch (error) {
     console.error(error);
+
+    return Response.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
