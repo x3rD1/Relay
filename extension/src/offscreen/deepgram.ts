@@ -1,11 +1,11 @@
+import { sendTranscript } from "./transcript";
+
+export let latestTranscript = "";
 let socket: WebSocket | null = null;
 
 let keepAliveTimer: ReturnType<typeof setInterval> | null = null;
 
-export function connectToDeepgram(
-  token: string,
-  sendTranscript: (transcript: string) => Promise<void>,
-): Promise<WebSocket> {
+export function connectToDeepgram(token: string): Promise<WebSocket> {
   const ws = new WebSocket(
     "wss://api.deepgram.com/v2/listen?model=flux-general-en&encoding=linear16&sample_rate=16000",
     ["bearer", token],
@@ -38,13 +38,11 @@ export function connectToDeepgram(
 
         if (message.type !== "TurnInfo") return;
 
-        if (message.event === "EndOfTurn") {
-          try {
-            await sendTranscript(message.transcript);
-          } catch (error) {
-            console.error("Failed to send transcript:", error);
-          }
+        if (message.transcript) {
+          latestTranscript = message.transcript;
         }
+
+        console.log("LATEST TRANSCRIPT:", latestTranscript);
       } catch (parseError) {
         console.warn(
           "Failed to parse non-JSON metadata payload from Deepgram stream:",
@@ -85,4 +83,17 @@ function startKeepAlive(socket: WebSocket) {
     const silence = new Int16Array(1);
     socket.send(silence.buffer);
   }, 1000 * 8);
+}
+
+export async function sendLatestTranscript(latestTranscript: string) {
+  const response = await sendTranscript(latestTranscript);
+
+  chrome.runtime.sendMessage({
+    action: "update-response",
+    response: response.data,
+  });
+}
+
+export function clearLatestTranscript() {
+  latestTranscript = "";
 }

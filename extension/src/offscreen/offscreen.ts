@@ -6,8 +6,12 @@ import {
   startStream,
   stopStream,
 } from "./audioSession";
-import { connectToDeepgram } from "./deepgram";
-import { sendTranscript } from "./transcript";
+import {
+  clearLatestTranscript,
+  connectToDeepgram,
+  latestTranscript,
+  sendLatestTranscript,
+} from "./deepgram";
 import { startVAD } from "./vad";
 
 let isSpeaking = false;
@@ -23,7 +27,7 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
     // Create a temporary Deepgram token
     const token = await getTempToken();
     // Connect to Deepgram's WebSocket using token and get its reference
-    const socket = await connectToDeepgram(token, sendTranscript);
+    const socket = await connectToDeepgram(token);
 
     // Callback on what to do with the pcm chunk
     const handlePcmChunk = (chunk: Int16Array) => {
@@ -56,8 +60,11 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
       preRollBuffer.length = 0;
     };
 
-    const onSpeechEnd = () => {
+    const onSpeechEnd = async () => {
       isSpeaking = false;
+      await sendLatestTranscript(latestTranscript);
+
+      clearLatestTranscript();
       console.log("SPEECH END");
     };
 
