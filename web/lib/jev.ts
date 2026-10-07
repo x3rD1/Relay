@@ -46,15 +46,6 @@ export async function analyzeTranscript(
                 "The customer is asking for general information or assistance that is not specific to the other available workflows.",
             },
           },
-
-          is_topic_change: {
-            type: "noul",
-            instructions: `
-            Workflow available: pools, trees, refund, general.
-            Current workflow: ${activeWorkflow}
-            Does the latest message indicate that we should switch away from the current workflow?
-            `,
-          },
         },
       }),
     });
