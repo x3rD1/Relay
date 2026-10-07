@@ -1,6 +1,18 @@
 import * as z from "zod";
-import { createWorkflow } from "@/lib/workflows";
+import { createWorkflow, getAllWorkflows } from "@/lib/workflows";
 import { workflowSchema, WorkflowInput } from "@/schemas/workflow";
+
+export async function GET() {
+  try {
+    const workflows = await getAllWorkflows();
+
+    return Response.json(workflows);
+  } catch (error) {
+    console.error(error);
+
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   let validatedData: WorkflowInput;
