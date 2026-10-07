@@ -12,22 +12,27 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model Workflow {
-  id        String  @id @default(uuid())
-  name      String
-  goal      String
-  criteria  String
-  rules     String[]
-  steps     WorkflowStep[]
+  id       String         @id @default(uuid())
+  name     String
+  goal     String
+  criteria String
+  rules    String[]
+  steps    WorkflowStep[]
+
+  createdAt DateTime @default(now())
+
+  @@map("workflows")
 }
 
 model WorkflowStep {
-  id            String    @id @default(uuid())
-  instruction   String
-  order         Int
-  required      Boolean   @default(false)
+  id          String  @id @default(uuid())
+  instruction String
+  order       Int
+  required    Boolean @default(false)
 
-  workflowId    String
-  workflow      Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@map("workflowSteps")
 }
