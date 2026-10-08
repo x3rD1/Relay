@@ -6,6 +6,7 @@ const JEV_MODEL = "jev-latest";
 export async function analyzeTranscript(
   transcripts: string[],
   activeWorkflow: string,
+  workflowChoices: Record<string, string>,
 ) {
   if (!TYPESAFE_API_URL)
     throw new Error("Configuration Error: TYPESAFE_API is not defined");
@@ -35,16 +36,7 @@ export async function analyzeTranscript(
 
             What workflow does the customer's latest request belong to?
             `,
-            criteria: {
-              pools:
-                "The customer needs help with a pool-related issue or request.",
-              trees:
-                "The customer needs help with a Christmas-tree-related issue or request.",
-              refund:
-                "The customer is requesting a refund, return, cancellation, or reversal of a purchase.",
-              general:
-                "The customer is asking for general information or assistance that is not specific to the other available workflows.",
-            },
+            criteria: workflowChoices,
           },
         },
       }),
