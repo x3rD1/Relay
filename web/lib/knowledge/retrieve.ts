@@ -1,26 +1,32 @@
-export function retrieveRelevantText(documentText: string, question: string) {
-  const paragraphs = documentText
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
+import prisma from "../clients/prisma";
+import { generateQueryEmbedding } from "./embeddings";
 
-  const keywords = question
-    .toLowerCase()
-    .split(/\W+/)
-    .filter((word) => word.length > 2);
+interface Section {
+  id: string;
+  title: string;
+  content: string;
+  distance: number;
+}
 
-  const scoredParagraphs = paragraphs.map((paragraph) => {
-    const text = paragraph.toLowerCase();
+export async function retrieveRelevantSections(
+  documentId: string,
+  question: string,
+) {
+  const vector = await generateQueryEmbedding(question);
 
-    const score = keywords.filter((keyword) => text.includes(keyword)).length;
+  const vectorString = `[${vector.join(",")}]`;
 
-    return { paragraph, score };
-  });
+  const sections = await prisma.$queryRaw<Section[]>`
+    SELECT id, title, content, embedding <=> ${vectorString}::vector AS distance
+    FROM "knowledgeSections" 
+    WHERE "knowledgeDocumentId" = ${documentId} 
+      AND embedding IS NOT NULL 
+    ORDER BY embedding <=> ${vectorString}::vector  ASC 
+    LIMIT 3`;
 
-  scoredParagraphs.sort((a, b) => b.score - a.score);
+  const relevantSections = sections.filter(
+    (section) => section.distance < 0.45,
+  );
 
-  return scoredParagraphs
-    .filter((item) => item.score > 0)
-    .slice(0, 3)
-    .map((item) => item.paragraph);
+  return relevantSections;
 }
