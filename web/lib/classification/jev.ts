@@ -1,19 +1,19 @@
+import { jevResponseSchema } from "./types";
+
 const TYPESAFE_API_URL = process.env.TYPESAFE_API;
 const API_KEY = process.env.JEV_API_KEY;
 
 const JEV_MODEL = "jev-latest";
 
 export async function analyzeTranscript(
-  transcripts: string[],
-  activeWorkflow: string,
-  workflowChoices: Record<string, string>,
+  transcripts: string,
+  documentChoices: Record<string, string>,
 ) {
   if (!TYPESAFE_API_URL)
     throw new Error("Configuration Error: TYPESAFE_API is not defined");
   if (!API_KEY)
     throw new Error("Configuration Error: JEV_API_KEY is not defined");
 
-  console.log("TRANSCRIPT:", transcripts[transcripts.length - 1]);
   try {
     const response = await fetch(TYPESAFE_API_URL, {
       method: "POST",
@@ -25,18 +25,12 @@ export async function analyzeTranscript(
         model: JEV_MODEL,
         state: transcripts,
         questions: {
-          topic: {
+          policy: {
             type: "choice",
             instructions: `
-            Current workflow: ${activeWorkflow}
-            Determine which workflow this message belongs to.
-            If there is an active workflow, treat messages that answer, provide information requested by, 
-            or otherwise continue the current workflow as belonging to that workflow, 
-            even if the message itself does not mention the workflow topic.
-
-            What workflow does the customer's latest request belong to?
+            Which knowledge document best matches the customer's latest request?
             `,
-            criteria: workflowChoices,
+            criteria: documentChoices,
           },
         },
       }),
@@ -61,7 +55,7 @@ export async function analyzeTranscript(
 
     console.log("Full answer: ", data);
 
-    return data;
+    return jevResponseSchema.parse(data);
   } catch (error) {
     console.log("API_ROUTE_ERROR: ", error);
 
