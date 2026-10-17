@@ -1,32 +1,50 @@
-import { analyzeTranscript } from "@/lib/jev";
-import { activeWorkflow, workflow } from "@/lib/workflow";
-import { buildWorkflowChoices } from "@/lib/workflowChoices";
-
-const customerContext: string[] = [];
+import { buildDocumentChoices } from "@/lib/classification/documentChoices";
+import { analyzeTranscript } from "@/lib/classification/jev";
+import { transcriptSchema } from "@/lib/classification/types";
+import { relevantPolicies } from "@/utils/relevantPolicies";
+import z from "zod";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { transcript }: { transcript: string } = body;
+    const transcript = transcriptSchema.parse(body).transcript;
 
-    const workflowChoices = await buildWorkflowChoices();
+    try {
+      const { documentChoices, documents } = await buildDocumentChoices();
 
-    customerContext.push(transcript);
+      const jevResponse = await analyzeTranscript(transcript, documentChoices);
+      const policy = jevResponse.answers.policy.choice;
 
-    const jevResponse = await analyzeTranscript(
-      customerContext,
-      activeWorkflow,
-      workflowChoices,
-    );
+      if (policy === "other") return Response.json([]);
 
-    const llmResponse = await workflow(transcript, jevResponse);
+      const probabilities = jevResponse.answers.policy.probabilities;
+      const suggestedPolicies = relevantPolicies(probabilities);
 
-    console.log(llmResponse);
+      const policies = suggestedPolicies
+        .map((name) => {
+          const document = documents.find((doc) => doc.name === name);
 
-    return Response.json({ success: true, data: llmResponse });
+          if (!document) return null;
+
+          return { id: document.id, name: document.name };
+        })
+        .filter((document) => document !== null);
+
+      return Response.json({ transcript, policies });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return Response.json({ error: error.issues }, { status: 502 });
+      }
+
+      console.error(error);
+      return Response.json({ error: "Something went wrong." }, { status: 500 });
+    }
   } catch (error) {
-    console.error(error);
+    if (error instanceof z.ZodError) {
+      return Response.json({ error: error.issues }, { status: 400 });
+    }
 
-    return Response.json({ error: "Something went wrong." }, { status: 500 });
+    console.error(error);
+    return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 }
