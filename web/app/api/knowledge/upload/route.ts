@@ -1,8 +1,8 @@
 import { HttpError, validateUploadedFile } from "@/lib/guards/fileGuards";
 import { createDocument } from "@/lib/knowledge/documents";
-import { organizeDocument } from "@/lib/knowledge/organize";
-import { extractPdfText } from "@/lib/knowledge/pdf";
-import { documentNameSchema } from "@/lib/knowledge/types";
+import { organizeDocument } from "@/lib/upload/organize";
+import { extractPdfText } from "@/lib/upload/pdf";
+import { documentNameSchema } from "@/lib/upload/schema";
 import z from "zod";
 
 export async function POST(request: Request) {

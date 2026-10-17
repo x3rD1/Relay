@@ -1,4 +1,4 @@
-import { jevResponseSchema } from "./types";
+import { jevResponseSchema } from "./schema";
 
 const TYPESAFE_API_URL = process.env.TYPESAFE_API;
 const API_KEY = process.env.JEV_API_KEY;

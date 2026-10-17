@@ -1,6 +1,6 @@
 import { buildDocumentChoices } from "@/lib/classification/documentChoices";
 import { analyzeTranscript } from "@/lib/classification/jev";
-import { transcriptSchema } from "@/lib/classification/types";
+import { transcriptSchema } from "@/lib/classification/schema";
 import { relevantPolicies } from "@/utils/relevantPolicies";
 import z from "zod";
 

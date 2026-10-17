@@ -1,5 +1,6 @@
 import { ai } from "../clients/ai";
-import { DocumentSection, documentSectionSchema } from "./types";
+import { documentSectionSchema } from "./schema";
+import { DocumentSection } from "./types";
 
 const documentJsonSchema = {
   type: "array",

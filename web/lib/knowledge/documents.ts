@@ -1,6 +1,6 @@
 import prisma from "../clients/prisma";
 import { generateEmbedding } from "./embeddings";
-import { DocumentSection } from "./types";
+import { DocumentSection } from "../upload/types";
 
 interface CreateDocumentInput {
   name: string;
