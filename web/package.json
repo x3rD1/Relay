@@ -11,6 +11,7 @@
     "contract:emit": "prisma contract emit"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.17",
     "@google/genai": "^2.25.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
