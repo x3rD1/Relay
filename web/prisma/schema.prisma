@@ -16,11 +16,13 @@ datasource db {
 model KnowledgeDocument {
   id        String   @id @default(uuid())
   name      String
+  userId    String   
   createdAt DateTime @default(now())
 
   sections KnowledgeSection[]
 
   @@map("knowledgeDocuments")
+  @@unique([userId, name])
 }
 
 model KnowledgeSection {

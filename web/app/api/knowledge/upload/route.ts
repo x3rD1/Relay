@@ -1,12 +1,20 @@
-import { HttpError, validateUploadedFile } from "@/lib/guards/fileGuards";
+import { auth } from "@clerk/nextjs/server";
+import { validateUploadedFile } from "@/lib/guards/fileGuards";
 import { createDocument } from "@/lib/knowledge/documents";
 import { organizeDocument } from "@/lib/upload/organize";
 import { extractPdfText } from "@/lib/upload/pdf";
 import { documentNameSchema } from "@/lib/upload/schema";
 import z from "zod";
+import { HttpError } from "@/errors";
 
 export async function POST(request: Request) {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData: FormData = await request.formData();
     const file = formData.get("file");
 
@@ -31,7 +39,11 @@ export async function POST(request: Request) {
     const name = formData.get("name");
     const validatedName = documentNameSchema.parse({ name });
 
-    await createDocument({ name: validatedName.name, data: organizedText });
+    await createDocument({
+      name: validatedName.name,
+      data: organizedText,
+      userId,
+    });
 
     return new Response(null, { status: 201 });
   } catch (error) {

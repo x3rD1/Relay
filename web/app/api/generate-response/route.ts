@@ -1,10 +1,9 @@
+import { auth } from "@clerk/nextjs/server";
 import { generateResponse } from "@/lib/response/llm";
 import { generateResponseSchema } from "@/lib/response/schema";
-import {
-  getDocumentSectionById,
-  SectionNotFoundError,
-} from "@/lib/response/sections";
+import { getDocumentSectionById } from "@/lib/response/sections";
 import z from "zod";
+import { HttpError } from "@/errors";
 
 export async function POST(request: Request) {
   try {
@@ -13,14 +12,23 @@ export async function POST(request: Request) {
       generateResponseSchema.parse(body);
 
     try {
-      const section = await getDocumentSectionById(sectionId);
+      const { userId } = await auth();
+
+      if (!userId) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const section = await getDocumentSectionById(sectionId, userId);
 
       const response = await generateResponse(question, section);
 
       return Response.json(response);
     } catch (error) {
-      if (error instanceof SectionNotFoundError) {
-        return Response.json({ error: error.message }, { status: 404 });
+      if (error instanceof HttpError) {
+        return Response.json(
+          { error: error.message },
+          { status: error.statusCode },
+        );
       }
 
       console.error(error);

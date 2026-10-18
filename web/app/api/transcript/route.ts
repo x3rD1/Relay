@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { buildDocumentChoices } from "@/lib/classification/documentChoices";
 import { analyzeTranscript } from "@/lib/classification/jev";
 import { transcriptSchema } from "@/lib/classification/schema";
@@ -10,7 +11,13 @@ export async function POST(request: Request) {
     const transcript = transcriptSchema.parse(body).transcript;
 
     try {
-      const { documentChoices, documents } = await buildDocumentChoices();
+      const { userId } = await auth();
+
+      if (!userId) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const { documentChoices, documents } = await buildDocumentChoices(userId);
 
       const jevResponse = await analyzeTranscript(transcript, documentChoices);
       const policy = jevResponse.answers.policy.choice;

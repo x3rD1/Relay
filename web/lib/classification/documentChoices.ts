@@ -1,7 +1,7 @@
 import { getDocuments } from "../knowledge/documents";
 
-export async function buildDocumentChoices() {
-  const documents = await getDocuments(); // Later: Needs userId
+export async function buildDocumentChoices(userId: string) {
+  const documents = await getDocuments(userId);
 
   const documentChoices: Record<string, string> = Object.fromEntries(
     documents.map((document) => [

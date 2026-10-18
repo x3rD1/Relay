@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { retrieveRelevantSections } from "@/lib/retrieval/retrieveRelevantSections";
 import { retrieveSectionsSchema } from "@/lib/retrieval/schema";
 import z from "zod";
@@ -9,7 +10,17 @@ export async function POST(request: Request) {
       retrieveSectionsSchema.parse(body);
 
     try {
-      const sections = await retrieveRelevantSections(question, documentId);
+      const { userId } = await auth();
+
+      if (!userId) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const sections = await retrieveRelevantSections(
+        question,
+        documentId,
+        userId,
+      );
 
       return Response.json(sections);
     } catch (error) {

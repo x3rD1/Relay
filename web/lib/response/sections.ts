@@ -1,17 +1,12 @@
+import { SectionNotFoundError } from "@/errors";
 import prisma from "../clients/prisma";
 
-export class SectionNotFoundError extends Error {
-  constructor() {
-    super("Section not found.");
-    this.name = "SectionNotFoundError";
-  }
-}
-
-export const getDocumentSectionById = async (sectionId: string) => {
-  // TODO: check authorization through resource ownership
-
-  const section = await prisma.knowledgeSection.findUnique({
-    where: { id: sectionId },
+export const getDocumentSectionById = async (
+  sectionId: string,
+  userId: string,
+) => {
+  const section = await prisma.knowledgeSection.findFirst({
+    where: { id: sectionId, knowledgeDocument: { userId } },
   });
 
   if (!section) throw new SectionNotFoundError();

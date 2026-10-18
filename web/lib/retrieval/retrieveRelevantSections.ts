@@ -11,18 +11,23 @@ interface Section {
 export async function retrieveRelevantSections(
   question: string,
   documentId: string,
+  userId: string,
 ) {
   const vector = await generateQueryEmbedding(question);
 
   const vectorString = `[${vector.join(",")}]`;
 
   const sections = await prisma.$queryRaw<Section[]>`
-    SELECT id, title, content, embedding <=> ${vectorString}::vector AS distance
-    FROM "knowledgeSections" 
-    WHERE "knowledgeDocumentId" = ${documentId} 
-      AND embedding IS NOT NULL 
-    ORDER BY embedding <=> ${vectorString}::vector  ASC 
-    LIMIT 3`;
+  SELECT s.id, s.title, s.content, s.embedding <=> ${vectorString}::vector AS distance
+  FROM "knowledgeSections" AS s
+  INNER JOIN "knowledgeDocuments" AS d
+    ON s."knowledgeDocumentId" = d.id
+  WHERE d.id = ${documentId}
+    AND d."userId" = ${userId}
+    AND s.embedding IS NOT NULL
+  ORDER BY s.embedding <=> ${vectorString}::vector ASC
+  LIMIT 3
+`;
 
   // console.log(sections);
 
