@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         })
         .filter((document) => document !== null);
 
-      return Response.json({ transcript, policies });
+      return Response.json({ policies });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return Response.json({ error: error.issues }, { status: 502 });
