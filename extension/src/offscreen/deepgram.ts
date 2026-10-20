@@ -1,4 +1,4 @@
-import { sendTranscript } from "./transcript";
+import { fetchPolicyMatches } from "./transcript";
 
 export let latestTranscript = "";
 let socket: WebSocket | null = null;
@@ -85,12 +85,13 @@ function startKeepAlive(socket: WebSocket) {
   }, 1000 * 8);
 }
 
-export async function sendLatestTranscript(latestTranscript: string) {
-  const response = await sendTranscript(latestTranscript);
+// Get the suggested documents from /api/transcript
+export async function processLatestTranscript(latestTranscript: string) {
+  const response = await fetchPolicyMatches(latestTranscript);
 
   chrome.runtime.sendMessage({
     action: "update-response",
-    response: response.data,
+    response: response.policies,
   });
 }
 

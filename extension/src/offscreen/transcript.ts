@@ -1,6 +1,8 @@
-export type LLMResponse = { success: boolean; data: string };
+export interface PolicyMatchesResponse {
+  policies: { id: string; name: string }[];
+}
 
-export async function sendTranscript(transcript: string) {
+export async function fetchPolicyMatches(transcript: string) {
   const response = await fetch("http://localhost:3000/api/transcript", {
     method: "POST",
     headers: {
@@ -15,7 +17,7 @@ export async function sendTranscript(transcript: string) {
     throw new Error(errorData.error);
   }
 
-  const data: LLMResponse = await response.json();
+  const data: PolicyMatchesResponse = await response.json();
 
   return data;
 }

@@ -10,7 +10,7 @@ import {
   clearLatestTranscript,
   connectToDeepgram,
   latestTranscript,
-  sendLatestTranscript,
+  processLatestTranscript,
 } from "./deepgram";
 import { startVAD } from "./vad";
 
@@ -62,7 +62,7 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
 
     const onSpeechEnd = async () => {
       isSpeaking = false;
-      await sendLatestTranscript(latestTranscript);
+      await processLatestTranscript(latestTranscript);
 
       clearLatestTranscript();
       console.log("SPEECH END");
