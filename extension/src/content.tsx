@@ -1,6 +1,6 @@
 import { createRoot, type Root } from "react-dom/client";
 import Overlay from "./components/Overlay";
-import { injectOverlay, isOverlayRemoved } from "./utils/uiManager";
+import { injectOverlay } from "./utils/uiManager";
 import { notifyContentReady } from "./utils/contentReady";
 import type { Message } from "./types/messages";
 
@@ -9,29 +9,36 @@ let rootOverlay: Root | null = null;
 chrome.runtime.onMessage.addListener(async (message: Message) => {
   switch (message.action) {
     case "show-overlay": {
-      const overlay = injectOverlay();
-      if (!overlay) {
-        return {
-          success: false,
-          error: "Element with a class name reoverlay already exist",
-        };
+      const shadowRoot = injectOverlay();
+
+      let mountPoint = shadowRoot.querySelector<HTMLDivElement>("#app-root");
+
+      if (!mountPoint) {
+        mountPoint = document.createElement("div");
+        mountPoint.id = "app-root";
+        mountPoint.style.cssText =
+          "position: fixed; inset: 0; pointer-events: none;";
+
+        shadowRoot.appendChild(mountPoint);
       }
 
-      const root = createRoot(overlay);
-      root.render(<Overlay />);
+      if (!rootOverlay) {
+        rootOverlay = createRoot(mountPoint);
+      }
 
-      rootOverlay = root;
+      rootOverlay.render(<Overlay />);
 
       await chrome.storage.local.set({ listening: true });
       return { success: true, data: "Overlay has been created" };
     }
 
     case "remove-overlay": {
-      if (!isOverlayRemoved()) {
+      const host = document.querySelector("#relay-overlay");
+
+      if (!host) {
         return {
           success: false,
-          error:
-            "Unable to remove overlay. Element with class name reoverlay does not exist",
+          error: "Overlay does not exist",
         };
       }
 

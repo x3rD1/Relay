@@ -1,24 +1,20 @@
 const BODY = document.body;
 
-export function injectOverlay() {
-  if (BODY.querySelector(".reoverlay")) return null;
+export function injectOverlay(): ShadowRoot {
+  let host = BODY.querySelector<HTMLDivElement>("#relay-overlay");
 
-  const overlay = document.createElement("div");
-  overlay.className = "reoverlay";
-  overlay.style.position = "fixed";
-  overlay.style.inset = "0";
-  overlay.style.pointerEvents = "none";
-  overlay.style.zIndex = "99999";
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "relay-overlay";
+    BODY.appendChild(host);
+  }
 
-  BODY.appendChild(overlay);
+  Object.assign(host.style, {
+    position: "fixed",
+    inset: "0",
+    pointerEvents: "none",
+    zIndex: "99999",
+  });
 
-  return overlay;
-}
-
-export function isOverlayRemoved() {
-  if (!BODY.querySelector(".reoverlay")) return false;
-
-  BODY.querySelector(".reoverlay")?.remove();
-
-  return true;
+  return host.shadowRoot ?? host.attachShadow({ mode: "open" });
 }
