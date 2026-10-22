@@ -14,7 +14,17 @@ chrome.runtime.onMessage.addListener(async (message: Message, sender) => {
     chrome.offscreen.closeDocument();
   }
 
-  if (message.action === "update-response") {
+  if (message.action === "get-transcript") {
+    const { tabId } = (await chrome.storage.local.get("tabId")) as {
+      tabId: number | null;
+    };
+
+    if (tabId == null) return;
+
+    await sendMessageToTab(tabId, message);
+  }
+
+  if (message.action === "get-policies") {
     const { tabId } = (await chrome.storage.local.get("tabId")) as {
       tabId: number | null;
     };
@@ -31,7 +41,11 @@ chrome.runtime.onMessageExternal.addListener(
       tabId: number;
     };
 
-    if (tabId == null) {
+    try {
+      await chrome.tabs.get(tabId);
+    } catch (error) {
+      console.error(error);
+
       const tab = await getTabByUrl("https://*.youtube.com/watch*");
       if (!(tab && tab.id)) {
         return {
@@ -41,7 +55,7 @@ chrome.runtime.onMessageExternal.addListener(
       }
 
       tabId = tab.id;
-      chrome.storage.local.set({ tabId });
+      await chrome.storage.local.set({ tabId });
     }
 
     const response = await sendMessageToTab(tabId, message);

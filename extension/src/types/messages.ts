@@ -2,7 +2,8 @@ type Action =
   | "show-overlay"
   | "remove-overlay"
   | "content-ready"
-  | "update-response"
+  | "get-transcript"
+  | "get-policies"
   | "start-capture"
   | "stop-capture"
   | "consume-stream"
@@ -11,7 +12,9 @@ type Action =
 
 export type Message = {
   action: Action;
-  response?: string;
+  interactionId?: string;
+  transcript?: string;
+  policies?: Policy[];
   streamId?: string;
 };
 
@@ -19,4 +22,9 @@ export type MsgResponse = {
   success: boolean;
   data?: unknown;
   error?: string;
+};
+
+export type Policy = {
+  id: string;
+  name: string;
 };

@@ -85,13 +85,27 @@ function startKeepAlive(socket: WebSocket) {
   }, 1000 * 8);
 }
 
-// Get the suggested documents from /api/transcript
-export async function processLatestTranscript(latestTranscript: string) {
+export async function processLatestTranscript(
+  latestTranscript: string,
+  interactionId: string,
+) {
   const response = await fetchPolicyMatches(latestTranscript);
 
   chrome.runtime.sendMessage({
-    action: "update-response",
-    response: response.policies,
+    action: "get-policies",
+    interactionId,
+    policies: response.policies,
+  });
+}
+
+export function sendTranscriptToUI(
+  latestTranscript: string,
+  interactionId: string,
+) {
+  chrome.runtime.sendMessage({
+    action: "get-transcript",
+    interactionId,
+    transcript: latestTranscript,
   });
 }
 

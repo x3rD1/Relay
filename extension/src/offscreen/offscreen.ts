@@ -11,6 +11,7 @@ import {
   connectToDeepgram,
   latestTranscript,
   processLatestTranscript,
+  sendTranscriptToUI,
 } from "./deepgram";
 import { startVAD } from "./vad";
 
@@ -62,7 +63,12 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
 
     const onSpeechEnd = async () => {
       isSpeaking = false;
-      await processLatestTranscript(latestTranscript);
+
+      const interactionId = crypto.randomUUID();
+      sendTranscriptToUI(latestTranscript, interactionId);
+
+      // Get suggested policies then send it to extension
+      await processLatestTranscript(latestTranscript, interactionId);
 
       clearLatestTranscript();
       console.log("SPEECH END");
