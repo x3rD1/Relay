@@ -1,22 +1,15 @@
-type Action =
-  | "show-overlay"
-  | "remove-overlay"
-  | "content-ready"
-  | "get-transcript"
-  | "get-policies"
-  | "start-capture"
-  | "stop-capture"
-  | "consume-stream"
-  | "offscreen-ready"
-  | "close-offscreen";
-
-export type Message = {
-  action: Action;
-  interactionId?: string;
-  transcript?: string;
-  policies?: Policy[];
-  streamId?: string;
-};
+export type Message =
+  | { action: "show-overlay" }
+  | { action: "remove-overlay" }
+  | { action: "content-ready" }
+  | { action: "start-capture" }
+  | { action: "stop-capture" }
+  | { action: "offscreen-ready" }
+  | { action: "close-offscreen" }
+  | { action: "consume-stream"; streamId: string }
+  | { action: "get-transcript"; interactionId: string; transcript: string }
+  | { action: "get-policies"; interactionId: string; policies: Policy[] }
+  | { action: "policies-error"; interactionId: string };
 
 export type MsgResponse = {
   success: boolean;

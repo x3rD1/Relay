@@ -89,13 +89,21 @@ export async function processLatestTranscript(
   latestTranscript: string,
   interactionId: string,
 ) {
-  const response = await fetchPolicyMatches(latestTranscript);
+  try {
+    const response = await fetchPolicyMatches(latestTranscript);
 
-  chrome.runtime.sendMessage({
-    action: "get-policies",
-    interactionId,
-    policies: response.policies,
-  });
+    chrome.runtime.sendMessage({
+      action: "get-policies",
+      interactionId,
+      policies: response.policies,
+    });
+  } catch (error) {
+    console.error(error);
+    chrome.runtime.sendMessage({
+      action: "policies-error",
+      interactionId,
+    });
+  }
 }
 
 export function sendTranscriptToUI(

@@ -23,7 +23,7 @@ chrome.runtime.sendMessage({
 
 chrome.runtime.onMessage.addListener(async (message: Message) => {
   if (message.action === "consume-stream") {
-    const stream = await startStream(message.streamId!);
+    const stream = await startStream(message.streamId);
 
     // Create a temporary Deepgram token
     const token = await getTempToken();
