@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       const jevResponse = await analyzeTranscript(transcript, documentChoices);
       const policy = jevResponse.answers.policy.choice;
 
-      if (policy === "other") return Response.json([]);
+      if (policy === "other") return Response.json({ policies: [] });
 
       const probabilities = jevResponse.answers.policy.probabilities;
       const suggestedPolicies = relevantPolicies(probabilities);
