@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import type { Message, Policy } from "../types/messages";
 
+type PolicyStatus = "loading" | "success" | "error";
+
 export interface Interaction {
   id: string;
   transcript: string;
   policies: Policy[];
+  policyStatus: PolicyStatus;
 }
 
 export function useTranscriptAndPolicies() {
@@ -22,18 +25,31 @@ export function useTranscriptAndPolicies() {
             id: interactionId,
             transcript,
             policies: [],
+            policyStatus: "loading",
           },
         ]);
       }
 
       if (message.action === "get-policies") {
         if (message.policies == null) return;
-        const { policies } = message;
+        const { interactionId, policies } = message;
+
+        setInteractions((prev) =>
+          prev.map((interaction) =>
+            interaction.id === interactionId
+              ? { ...interaction, policies, policyStatus: "success" }
+              : interaction,
+          ),
+        );
+      }
+
+      if (message.action === "policies-error") {
+        if (message.interactionId == null) return;
 
         setInteractions((prev) =>
           prev.map((interaction) =>
             interaction.id === message.interactionId
-              ? { ...interaction, policies }
+              ? { ...interaction, policyStatus: "error" }
               : interaction,
           ),
         );
