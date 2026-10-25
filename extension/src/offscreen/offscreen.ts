@@ -7,9 +7,9 @@ import {
   stopStream,
 } from "./audioSession";
 import {
-  clearLatestTranscript,
+  clearFullTranscript,
   connectToDeepgram,
-  latestTranscript,
+  fullTranscript,
   processLatestTranscript,
   sendTranscriptToUI,
 } from "./deepgram";
@@ -65,12 +65,12 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
       isSpeaking = false;
 
       const interactionId = crypto.randomUUID();
-      sendTranscriptToUI(latestTranscript, interactionId);
+      sendTranscriptToUI(fullTranscript, interactionId);
 
       // Get suggested policies then send it to extension
-      await processLatestTranscript(latestTranscript, interactionId);
+      await processLatestTranscript(fullTranscript, interactionId);
 
-      clearLatestTranscript();
+      clearFullTranscript();
       console.log("SPEECH END");
     };
 

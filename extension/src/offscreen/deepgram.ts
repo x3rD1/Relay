@@ -1,6 +1,10 @@
 import { fetchPolicyMatches } from "./transcript";
 
-export let latestTranscript = "";
+let completedTurns: string[] = [];
+let latestTranscript = "";
+let currentTurnIndex: number | null = null;
+export let fullTranscript: string;
+
 let socket: WebSocket | null = null;
 
 let keepAliveTimer: ReturnType<typeof setInterval> | null = null;
@@ -38,11 +42,28 @@ export function connectToDeepgram(token: string): Promise<WebSocket> {
 
         if (message.type !== "TurnInfo") return;
 
-        if (message.transcript) {
+        if (currentTurnIndex !== message.turn_index) {
+          currentTurnIndex = message.turn_index;
+          latestTranscript = "";
+        }
+
+        if (message.event === "Update" || message.event === "StartOfTurn") {
           latestTranscript = message.transcript;
         }
 
-        console.log("LATEST TRANSCRIPT:", latestTranscript);
+        if (message.event === "EndOfTurn") {
+          latestTranscript = message.transcript;
+
+          if (latestTranscript.trim()) {
+            completedTurns.push(latestTranscript);
+          }
+
+          latestTranscript = "";
+        }
+
+        fullTranscript = [...completedTurns, latestTranscript]
+          .filter(Boolean)
+          .join(" ");
       } catch (parseError) {
         console.warn(
           "Failed to parse non-JSON metadata payload from Deepgram stream:",
@@ -86,11 +107,11 @@ function startKeepAlive(socket: WebSocket) {
 }
 
 export async function processLatestTranscript(
-  latestTranscript: string,
+  fullTranscript: string,
   interactionId: string,
 ) {
   try {
-    const response = await fetchPolicyMatches(latestTranscript);
+    const response = await fetchPolicyMatches(fullTranscript);
 
     chrome.runtime.sendMessage({
       action: "get-policies",
@@ -107,16 +128,17 @@ export async function processLatestTranscript(
 }
 
 export function sendTranscriptToUI(
-  latestTranscript: string,
+  fullTranscript: string,
   interactionId: string,
 ) {
   chrome.runtime.sendMessage({
     action: "get-transcript",
     interactionId,
-    transcript: latestTranscript,
+    transcript: fullTranscript,
   });
 }
 
-export function clearLatestTranscript() {
-  latestTranscript = "";
+export function clearFullTranscript() {
+  fullTranscript = "";
+  completedTurns = [];
 }
