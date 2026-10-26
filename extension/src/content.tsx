@@ -1,9 +1,17 @@
 import { createRoot, type Root } from "react-dom/client";
-import Overlay from "./components/Overlay";
-import overlayCss from "./components/Overlay.module.css?inline";
+import Overlay from "./components/overlay/Overlay";
 import { injectOverlay } from "./utils/uiManager";
 import { notifyContentReady } from "./utils/contentReady";
 import type { Message } from "./types/messages";
+import overlayCss from "./components/overlay/Overlay.module.css?inline";
+import conversationFeedCss from "./components/conversation/ConversationFeed.module.css?inline";
+import emptyStateCss from "./components/conversation/EmptyState.module.css?inline";
+
+const combinedOverlayCss = [
+  overlayCss,
+  conversationFeedCss,
+  emptyStateCss,
+].join("\n");
 
 let rootOverlay: Root | null = null;
 
@@ -15,7 +23,7 @@ chrome.runtime.onMessage.addListener(async (message: Message) => {
       if (!shadowRoot.querySelector("#overlay-styles")) {
         const style = document.createElement("style");
         style.id = "overlay-styles";
-        style.textContent = overlayCss;
+        style.textContent = combinedOverlayCss;
         shadowRoot.prepend(style);
       }
 
