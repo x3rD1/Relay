@@ -33,3 +33,17 @@ export class VectorGenerationError extends HttpError {
     this.name = "VectorGenerationError";
   }
 }
+
+export class UnauthorizedError extends HttpError {
+  constructor(message = "Unauthorized access. Please log in.") {
+    super(message, 401);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class UserNotOnboardedError extends HttpError {
+  constructor(message = "User authenticated but profile record not found.") {
+    super(message, 403);
+    this.name = "UserNotOnboardedError";
+  }
+}
