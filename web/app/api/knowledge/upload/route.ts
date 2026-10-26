@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { validateUploadedFile } from "@/lib/guards/fileGuards";
 import { createDocument } from "@/lib/knowledge/documents";
 import { organizeDocument } from "@/lib/upload/organize";
@@ -6,14 +5,11 @@ import { extractPdfText } from "@/lib/upload/pdf";
 import { documentNameSchema } from "@/lib/upload/schema";
 import z from "zod";
 import { HttpError } from "@/errors";
+import { getAuthenticatedUserId } from "@/lib/auth/auth";
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userId = await getAuthenticatedUserId();
 
     const formData: FormData = await request.formData();
     const file = formData.get("file");
@@ -51,14 +47,14 @@ export async function POST(request: Request) {
       return Response.json({ error: error.issues }, { status: 400 });
     }
 
-    console.error(error);
-
     if (error instanceof HttpError) {
       return Response.json(
         { error: error.message },
         { status: error.statusCode },
       );
     }
+
+    console.error(error);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

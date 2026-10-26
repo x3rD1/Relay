@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { retrieveRelevantSections } from "@/lib/retrieval/retrieveRelevantSections";
 import { retrieveSectionsSchema } from "@/lib/retrieval/schema";
 import z from "zod";
+import { getAuthenticatedUserId } from "@/lib/auth/auth";
+import { HttpError } from "@/errors";
 
 export async function POST(request: Request) {
   try {
@@ -10,11 +11,7 @@ export async function POST(request: Request) {
       retrieveSectionsSchema.parse(body);
 
     try {
-      const { userId } = await auth();
-
-      if (!userId) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-      }
+      const userId = await getAuthenticatedUserId();
 
       const sections = await retrieveRelevantSections(
         question,
@@ -25,6 +22,14 @@ export async function POST(request: Request) {
       return Response.json(sections);
     } catch (error) {
       console.error(error);
+
+      if (error instanceof HttpError) {
+        return Response.json(
+          { error: error.message },
+          { status: error.statusCode },
+        );
+      }
+
       return Response.json({ error: "Something went wrong." }, { status: 500 });
     }
   } catch (error) {

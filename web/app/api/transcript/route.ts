@@ -1,9 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { buildDocumentChoices } from "@/lib/classification/documentChoices";
 import { analyzeTranscript } from "@/lib/classification/jev";
 import { transcriptSchema } from "@/lib/classification/schema";
 import { relevantPolicies } from "@/utils/relevantPolicies";
 import z from "zod";
+import { getAuthenticatedUserId } from "@/lib/auth/auth";
+import { HttpError } from "@/errors";
 
 export async function POST(request: Request) {
   try {
@@ -11,11 +12,7 @@ export async function POST(request: Request) {
     const transcript = transcriptSchema.parse(body).transcript;
 
     try {
-      const { userId } = await auth();
-
-      if (!userId) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-      }
+      const userId = await getAuthenticatedUserId();
 
       const { documentChoices, documents } = await buildDocumentChoices(userId);
 
@@ -41,6 +38,13 @@ export async function POST(request: Request) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return Response.json({ error: error.issues }, { status: 502 });
+      }
+
+      if (error instanceof HttpError) {
+        return Response.json(
+          { error: error.message },
+          { status: error.statusCode },
+        );
       }
 
       console.error(error);

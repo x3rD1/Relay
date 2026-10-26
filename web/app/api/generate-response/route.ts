@@ -1,9 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { generateResponse } from "@/lib/response/llm";
 import { generateResponseSchema } from "@/lib/response/schema";
 import { getDocumentSectionById } from "@/lib/response/sections";
 import z from "zod";
 import { HttpError } from "@/errors";
+import { getAuthenticatedUserId } from "@/lib/auth/auth";
 
 export async function POST(request: Request) {
   try {
@@ -12,11 +12,7 @@ export async function POST(request: Request) {
       generateResponseSchema.parse(body);
 
     try {
-      const { userId } = await auth();
-
-      if (!userId) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-      }
+      const userId = await getAuthenticatedUserId();
 
       const section = await getDocumentSectionById(sectionId, userId);
 
