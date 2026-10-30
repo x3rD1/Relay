@@ -22,4 +22,6 @@ export async function startVAD(
   });
 
   vad.start();
+
+  return vad;
 }
