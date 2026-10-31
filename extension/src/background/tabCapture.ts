@@ -147,9 +147,6 @@ export function setupTabCapture() {
             });
 
             if (!response.ok) {
-              // Set status to false indicating stop capture
-              await chrome.storage.local.set({ isCapturing: false });
-
               sendResponse(response);
               return;
             }
