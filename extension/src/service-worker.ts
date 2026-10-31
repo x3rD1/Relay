@@ -1,39 +1,59 @@
+import { generateClerkToken } from "./background/generateClerkToken";
 import { restoreOverlayOnContentReady } from "./background/restoreOverlay";
 import { setupTabCapture } from "./background/tabCapture";
 import type { Message, MsgResponse } from "./types/messages";
 import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
-chrome.runtime.onMessage.addListener(async (message: Message, sender) => {
-  if (message.action === "content-ready") {
-    // Keep the overlay persistent on refresh
-    await restoreOverlayOnContentReady(sender);
-  }
+chrome.runtime.onMessage.addListener(
+  (message: Message, sender, sendResponse: (response: boolean) => void) => {
+    if (message.action === "content-ready") {
+      // Keep the overlay persistent on refresh
+      (async () => {
+        await restoreOverlayOnContentReady(sender);
+      })();
+    }
 
-  if (message.action === "close-offscreen") {
-    console.log("closing offscreen");
-    chrome.offscreen.closeDocument();
-  }
+    if (message.action === "get-capture-status") {
+      (async () => {
+        const status = (await chrome.storage.local.get("isCapturing")) as {
+          isCapturing: boolean;
+        };
 
-  if (message.action === "get-transcript") {
-    const { tabId } = (await chrome.storage.local.get("tabId")) as {
-      tabId: number | null;
-    };
+        sendResponse(status.isCapturing);
+      })();
 
-    if (tabId == null) return;
+      return true; // Keep the channel open
+    }
 
-    await sendMessageToTab(tabId, message);
-  }
+    if (message.action === "capture-ended") {
+      chrome.storage.local.set({ isCapturing: false });
+    }
 
-  if (message.action === "get-policies") {
-    const { tabId } = (await chrome.storage.local.get("tabId")) as {
-      tabId: number | null;
-    };
+    if (message.action === "get-transcript") {
+      (async () => {
+        const { tabId } = (await chrome.storage.local.get("tabId")) as {
+          tabId: number | null;
+        };
 
-    if (tabId == null) return;
+        if (tabId == null) return;
 
-    await sendMessageToTab(tabId, message);
-  }
-});
+        await sendMessageToTab(tabId, message);
+      })();
+    }
+
+    if (message.action === "get-policies") {
+      (async () => {
+        const { tabId } = (await chrome.storage.local.get("tabId")) as {
+          tabId: number | null;
+        };
+
+        if (tabId == null) return;
+
+        await sendMessageToTab(tabId, message);
+      })();
+    }
+  },
+);
 
 chrome.runtime.onMessageExternal.addListener(
   async (message: Message): Promise<MsgResponse | undefined> => {
@@ -46,7 +66,7 @@ chrome.runtime.onMessageExternal.addListener(
     } catch (error) {
       console.error(error);
 
-      const tab = await getTabByUrl("https://*.youtube.com/watch*");
+      const tab = await getTabByUrl("https://*.youtube.com/*");
       if (!(tab && tab.id)) {
         return {
           success: false,
@@ -74,5 +94,7 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   chrome.storage.local.set({ tabId: null });
 });
 
+// Register clerk token generator
+generateClerkToken();
 // Register tab capture listener
 setupTabCapture();

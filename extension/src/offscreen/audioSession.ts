@@ -1,6 +1,8 @@
 import audioProcessorUrl from "./audioProcessor.ts?url";
 import { closeDeepgram } from "./deepgram";
 
+export let isStopping = false; // Used for stop capture message action
+
 let stream: MediaStream | null = null;
 
 export const preRollBuffer: Int16Array[] = [];
@@ -25,6 +27,8 @@ export async function startStream(streamId: string) {
     video: false,
   });
 
+  isStopping = false; // Resets to false
+
   await playAudioBackToSpeaker(stream);
 
   return stream;
@@ -41,7 +45,6 @@ export async function startAudioProcessor(
   onPcmChunk: (chunk: Int16Array) => void,
 ) {
   const context = new AudioContext({ sampleRate: 16000 });
-  console.log("AUDIO SAMPLE RATE:", context.sampleRate);
 
   await context.audioWorklet.addModule(audioProcessorUrl);
 
@@ -67,6 +70,8 @@ export async function startAudioProcessor(
 
 export async function stopStream() {
   if (stream === null) return;
+
+  isStopping = true;
 
   const currentStream = stream;
 
