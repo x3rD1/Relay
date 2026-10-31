@@ -1,4 +1,4 @@
-import { fetchPolicyMatches } from "./transcript";
+import { fetchPolicyMatches } from "../services/policyService";
 
 let completedTurns: string[] = [];
 let latestTranscript = "";
