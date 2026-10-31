@@ -1,8 +1,8 @@
 import { retrieveRelevantSections } from "@/lib/retrieval/retrieveRelevantSections";
 import { retrieveSectionsSchema } from "@/lib/retrieval/schema";
 import z from "zod";
-import { getAuthenticatedUserId } from "@/lib/auth/auth";
 import { HttpError } from "@/errors";
+import { getAuthenticatedUserIdFromClerkToken } from "@/lib/auth/auth";
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       retrieveSectionsSchema.parse(body);
 
     try {
-      const userId = await getAuthenticatedUserId();
+      const userId = await getAuthenticatedUserIdFromClerkToken(request);
 
       const sections = await retrieveRelevantSections(
         question,
@@ -21,14 +21,14 @@ export async function POST(request: Request) {
 
       return Response.json(sections);
     } catch (error) {
-      console.error(error);
-
       if (error instanceof HttpError) {
         return Response.json(
           { error: error.message },
           { status: error.statusCode },
         );
       }
+
+      console.error(error);
 
       return Response.json({ error: "Something went wrong." }, { status: 500 });
     }
