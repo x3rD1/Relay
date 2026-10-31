@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/chrome-extension": "^3.1.100",
     "@ricky0123/vad-web": "^0.0.31",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"

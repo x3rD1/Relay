@@ -22,9 +22,14 @@ export default defineManifest({
     type: "module",
   },
 
-  permissions: ["storage", "tabCapture", "activeTab", "offscreen"],
+  permissions: ["storage", "cookies", "tabCapture", "activeTab", "offscreen"],
 
-  host_permissions: ["http://localhost:3000/*", "https://*.youtube.com/*"],
+  host_permissions: [
+    "http://localhost:3000/*",
+    "http://localhost/*",
+    "https://*.youtube.com/*",
+    "https://precise-flamingo-1156.clerk.accounts.dev/*",
+  ],
 
   externally_connectable: {
     matches: ["http://localhost:3000/*"],
