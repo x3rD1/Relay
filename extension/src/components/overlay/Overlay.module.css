@@ -5,6 +5,14 @@
   font-family: system-ui, sans-serif;
 }
 
+.visible {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
+
 .panel {
   position: absolute;
   bottom: 16px;

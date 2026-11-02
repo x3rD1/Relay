@@ -14,11 +14,13 @@ export default function Overlay() {
 
   return (
     <div className={styles.host}>
-      {dialogVisible ? (
+      <div className={dialogVisible ? styles.visible : styles.hidden}>
         <Panel interactions={interactions} onMinimize={toggleDialog} />
-      ) : (
+      </div>
+
+      <div className={dialogVisible ? styles.hidden : styles.visible}>
         <Launcher onClick={toggleDialog} />
-      )}
+      </div>
     </div>
   );
 }
