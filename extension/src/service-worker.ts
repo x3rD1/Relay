@@ -1,11 +1,12 @@
 import { generateClerkToken } from "./background/generateClerkToken";
 import { restoreOverlayOnContentReady } from "./background/restoreOverlay";
 import { setupTabCapture } from "./background/tabCapture";
+import { fetchRelevantSections } from "./services/policyService";
 import type { Message, MsgResponse } from "./types/messages";
 import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
 chrome.runtime.onMessage.addListener(
-  (message: Message, sender, sendResponse: (response: boolean) => void) => {
+  (message: Message, sender, sendResponse) => {
     if (message.action === "content-ready") {
       // Keep the overlay persistent on refresh
       (async () => {
@@ -51,6 +52,20 @@ chrome.runtime.onMessage.addListener(
 
         await sendMessageToTab(tabId, message);
       })();
+    }
+
+    if (message.action === "retrieve-policy-sections") {
+      (async () => {
+        const sections = await fetchRelevantSections(
+          message.question,
+          message.documentId,
+          message.clerkToken,
+        );
+
+        sendResponse(sections);
+      })();
+
+      return true;
     }
   },
 );

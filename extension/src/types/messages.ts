@@ -12,7 +12,13 @@ export type Message =
   | { action: "consume-stream"; streamId: string; clerkToken: string }
   | { action: "get-transcript"; interactionId: string; transcript: string }
   | { action: "get-policies"; interactionId: string; policies: Policy[] }
-  | { action: "policies-error"; interactionId: string };
+  | { action: "policies-error"; interactionId: string }
+  | {
+      action: "retrieve-policy-sections";
+      clerkToken: string;
+      question: string;
+      documentId: string;
+    };
 
 export type MsgResponse = {
   success: boolean;
