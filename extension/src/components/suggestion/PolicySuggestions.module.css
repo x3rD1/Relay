@@ -1,0 +1,68 @@
+.policy {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.policy + .policy {
+  margin-top: 8px;
+}
+
+.policyButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.policyButton:hover {
+  background: #f9fafb;
+}
+
+.policyButton:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.loading {
+  margin: 8px 0;
+  padding: 0 12px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.dropdown {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    height 300ms ease,
+    opacity 250ms ease;
+}
+
+.dropdown.open {
+  height: auto;
+  opacity: 1;
+}
+
+.dropdownContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 10px 10px;
+}
+
+@supports (interpolate-size: allow-keywords) {
+  :global(*) {
+    interpolate-size: allow-keywords;
+  }
+}

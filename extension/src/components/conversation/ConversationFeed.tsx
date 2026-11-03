@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Interaction } from "../../hooks/useTranscriptAndPolicies";
 import EmptyState from "./EmptyState";
 import styles from "./ConversationFeed.module.css";
+import PolicySuggestions from "../suggestion/PolicySuggestions";
 
 export default function ConversationFeed({
   interactions,
@@ -38,22 +39,7 @@ export default function ConversationFeed({
 
           {interaction.policyStatus === "success" &&
             interaction.policies.length > 0 && (
-              <div className={styles.suggestions}>
-                <p className={styles.suggestionsLabel}>Suggested policies</p>
-
-                {interaction.policies.map((policy) => (
-                  <button
-                    key={policy.id}
-                    type="button"
-                    className={styles.policyButton}
-                    onClick={() => {
-                      // API integration later
-                    }}
-                  >
-                    {policy.name}
-                  </button>
-                ))}
-              </div>
+              <PolicySuggestions interaction={interaction} />
             )}
 
           {interaction.policyStatus === "error" && (

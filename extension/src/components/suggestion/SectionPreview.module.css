@@ -1,0 +1,45 @@
+.sectionPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.sectionPreview:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.sectionTitle {
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sectionContent {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sectionAction {
+  align-self: flex-end;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 500;
+}

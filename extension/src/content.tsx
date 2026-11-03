@@ -6,11 +6,15 @@ import type { Message } from "./types/messages";
 import overlayCss from "./components/overlay/Overlay.module.css?inline";
 import conversationFeedCss from "./components/conversation/ConversationFeed.module.css?inline";
 import emptyStateCss from "./components/conversation/EmptyState.module.css?inline";
+import suggestionCss from "./components/suggestion/PolicySuggestions.module.css?inline";
+import sectionPreviewCss from "./components/suggestion/SectionPreview.module.css?inline";
 
 const combinedOverlayCss = [
   overlayCss,
   conversationFeedCss,
   emptyStateCss,
+  suggestionCss,
+  sectionPreviewCss,
 ].join("\n");
 
 let rootOverlay: Root | null = null;

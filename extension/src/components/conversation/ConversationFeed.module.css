@@ -1,10 +1,13 @@
 .interaction {
-  padding: 12px 0;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
 }
 
 .interaction:last-of-type {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .transcript {
@@ -40,31 +43,6 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-}
-
-.policyButton {
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  color: #1f2937;
-  font: inherit;
-  font-size: 13px;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease;
-}
-
-.policyButton:hover {
-  background: #f9fafb;
-  border-color: #cbd5e1;
-}
-
-.policyButton:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
 }
 
 .status {
