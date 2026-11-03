@@ -5,11 +5,11 @@ import { extractPdfText } from "@/lib/upload/pdf";
 import { documentNameSchema } from "@/lib/upload/schema";
 import z from "zod";
 import { HttpError } from "@/errors";
-import { getAuthenticatedUserId } from "@/lib/auth/auth";
+import { getAuthenticatedUserIdFromClerkAuth } from "@/lib/auth/auth";
 
 export async function POST(request: Request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserIdFromClerkAuth();
 
     const formData: FormData = await request.formData();
     const file = formData.get("file");
