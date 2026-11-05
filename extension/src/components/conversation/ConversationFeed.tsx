@@ -3,12 +3,17 @@ import type { Interaction } from "../../hooks/useTranscriptAndPolicies";
 import EmptyState from "./EmptyState";
 import styles from "./ConversationFeed.module.css";
 import PolicySuggestions from "../suggestion/PolicySuggestions";
+import type { Section } from "../../types/section";
+
+type ConversationFeedProps = {
+  interactions: Interaction[];
+  onSectionSelect: (section: Section, transcript: string) => void;
+};
 
 export default function ConversationFeed({
   interactions,
-}: {
-  interactions: Interaction[];
-}) {
+  onSectionSelect,
+}: ConversationFeedProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +44,10 @@ export default function ConversationFeed({
 
           {interaction.policyStatus === "success" &&
             interaction.policies.length > 0 && (
-              <PolicySuggestions interaction={interaction} />
+              <PolicySuggestions
+                interaction={interaction}
+                onSectionSelect={onSectionSelect}
+              />
             )}
 
           {interaction.policyStatus === "error" && (

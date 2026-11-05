@@ -5,11 +5,15 @@ import type { Section } from "../../types/section";
 import { retrievePolicySections } from "../../services/retrievePolicySections";
 import SectionPreview from "./SectionPreview";
 
+type PolicySuggestionsProps = {
+  interaction: Interaction;
+  onSectionSelect: (section: Section, transcript: string) => void;
+};
+
 export default function PolicySuggestions({
   interaction,
-}: {
-  interaction: Interaction;
-}) {
+  onSectionSelect,
+}: PolicySuggestionsProps) {
   const [expandedPolicyId, setExpandedPolicyId] = useState<string | null>(null);
   const [sectionsByPolicy, setSectionsByPolicy] = useState<
     Record<string, Section[]>
@@ -44,10 +48,11 @@ export default function PolicySuggestions({
     } catch (error) {
       console.error("Failed to retrieve policy sections:", error);
 
-      setPolicyErrors((current) => ({
-        ...current,
-        [policyId]: "Failed to retrieve sections.",
-      }));
+      if (error instanceof Error)
+        setPolicyErrors((current) => ({
+          ...current,
+          [policyId]: error.message,
+        }));
     } finally {
       setLoadingPolicyIds((current) => {
         const updated = new Set(current);
@@ -100,7 +105,12 @@ export default function PolicySuggestions({
             >
               <div className={styles.dropdownContent}>
                 {sections?.map((section) => (
-                  <SectionPreview key={section.id} section={section} />
+                  <SectionPreview
+                    key={section.id}
+                    section={section}
+                    transcript={interaction.transcript}
+                    onSectionSelect={onSectionSelect}
+                  />
                 ))}
 
                 {error && <p role="alert">{error}</p>}

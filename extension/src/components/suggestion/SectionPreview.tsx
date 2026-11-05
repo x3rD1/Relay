@@ -1,9 +1,23 @@
 import type { Section } from "../../types/section";
 import styles from "./SectionPreview.module.css";
 
-export default function SectionPreview({ section }: { section: Section }) {
+type SectionPreviewProps = {
+  section: Section;
+  transcript: string;
+  onSectionSelect: (section: Section, transcript: string) => void;
+};
+
+export default function SectionPreview({
+  section,
+  transcript,
+  onSectionSelect,
+}: SectionPreviewProps) {
   return (
-    <button type="button" className={styles.sectionPreview}>
+    <button
+      type="button"
+      className={styles.sectionPreview}
+      onClick={() => onSectionSelect(section, transcript)}
+    >
       <span className={styles.sectionTitle}>{section.title}</span>
 
       <span className={styles.sectionContent}>{section.content}</span>
