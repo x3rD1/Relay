@@ -1,35 +1,9 @@
 import { HttpError } from "@/errors";
-import { getUserByClerkId } from "@/lib/users/users";
-import { verifyToken } from "@clerk/backend";
+import { getAuthenticatedUserIdFromClerkToken } from "@/lib/auth/auth";
 
-export async function POST(req: Request) {
-  const authHeader = req.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return Response.json(
-      { error: "Unauthorized missing token" },
-      { status: 401 },
-    );
-  }
-
-  // Extract the token
-  const token = authHeader.split(" ")[1];
-
+export async function POST(request: Request) {
   try {
-    const clerkSecretKey = process.env.CLERK_SECRET_KEY;
-
-    if (!clerkSecretKey) {
-      return Response.json(
-        { error: "Clerk secret key is not configured" },
-        { status: 500 },
-      );
-    }
-
-    const claims = await verifyToken(token, {
-      secretKey: clerkSecretKey,
-    });
-
-    await getUserByClerkId(claims.sub);
+    await getAuthenticatedUserIdFromClerkToken(request);
   } catch (error) {
     if (error instanceof HttpError) {
       return Response.json(
@@ -39,10 +13,8 @@ export async function POST(req: Request) {
     }
 
     console.error(error);
-    return Response.json(
-      { error: "Invalid or expired token" },
-      { status: 401 },
-    );
+
+    return Response.json({ error: "Something went wrong." }, { status: 500 });
   }
 
   const apikey = process.env.DEEPGRAM_API_KEY;

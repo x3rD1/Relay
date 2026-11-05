@@ -3,7 +3,7 @@ import { analyzeTranscript } from "@/lib/classification/jev";
 import { transcriptSchema } from "@/lib/classification/schema";
 import { relevantPolicies } from "@/utils/relevantPolicies";
 import z from "zod";
-import { getAuthenticatedUserIdFromClerkAuth } from "@/lib/auth/auth";
+import { getAuthenticatedUserIdFromClerkToken } from "@/lib/auth/auth";
 import { HttpError } from "@/errors";
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const transcript = transcriptSchema.parse(body).transcript;
 
     try {
-      const userId = await getAuthenticatedUserIdFromClerkAuth();
+      const userId = await getAuthenticatedUserIdFromClerkToken(request);
 
       const { documentChoices, documents } = await buildDocumentChoices(userId);
 

@@ -3,7 +3,7 @@ import { generateResponseSchema } from "@/lib/response/schema";
 import { getDocumentSectionById } from "@/lib/response/sections";
 import z from "zod";
 import { HttpError } from "@/errors";
-import { getAuthenticatedUserId } from "@/lib/auth/auth";
+import { getAuthenticatedUserIdFromClerkToken } from "@/lib/auth/auth";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       generateResponseSchema.parse(body);
 
     try {
-      const userId = await getAuthenticatedUserId();
+      const userId = await getAuthenticatedUserIdFromClerkToken(request);
 
       const section = await getDocumentSectionById(sectionId, userId);
 
