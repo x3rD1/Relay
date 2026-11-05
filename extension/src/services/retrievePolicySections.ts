@@ -4,26 +4,15 @@ export async function retrievePolicySections(
   question: string,
   documentId: string,
 ): Promise<Section[]> {
-  const clerkToken: { token: string | null } = await chrome.runtime.sendMessage(
-    {
-      action: "get-clerkToken",
-    },
-  );
-
-  if (!clerkToken?.token) {
-    throw new Error("No Clerk token available");
-  }
-
-  const policySections = await chrome.runtime.sendMessage({
+  const response = await chrome.runtime.sendMessage({
     action: "retrieve-policy-sections",
-    clerkToken: clerkToken.token,
     question,
     documentId,
   });
 
-  if (!Array.isArray(policySections)) {
-    throw new Error("Failed to retrieve policy sections");
+  if (!response.ok) {
+    throw new Error(response.error);
   }
 
-  return policySections as Section[];
+  return response.sections as Section[];
 }

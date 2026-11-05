@@ -1,7 +1,10 @@
-import { generateClerkToken } from "./background/generateClerkToken";
+import { getClerkToken } from "./auth/auth";
 import { restoreOverlayOnContentReady } from "./background/restoreOverlay";
 import { setupTabCapture } from "./background/tabCapture";
-import { fetchRelevantSections } from "./services/policyService";
+import {
+  fetchRelevantSections,
+  generateResponse,
+} from "./services/policyService";
 import type { Message, MsgResponse } from "./types/messages";
 import { getTabByUrl, sendMessageToTab } from "./utils/sendMessageToTab";
 
@@ -56,16 +59,61 @@ chrome.runtime.onMessage.addListener(
 
     if (message.action === "retrieve-policy-sections") {
       (async () => {
-        const sections = await fetchRelevantSections(
-          message.question,
-          message.documentId,
-          message.clerkToken,
-        );
+        try {
+          const clerkToken = await getClerkToken();
 
-        sendResponse(sections);
+          if (!clerkToken) {
+            sendResponse({ ok: false, error: "Unauthorized request" });
+            return;
+          }
+
+          const sections = await fetchRelevantSections(
+            message.question,
+            message.documentId,
+            clerkToken,
+          );
+
+          sendResponse({ ok: true, sections });
+        } catch (error) {
+          if (error instanceof Error) {
+            sendResponse({ ok: false, error: error.message });
+          } else {
+            sendResponse({ ok: false, error: "An unexpected error occurred" });
+          }
+        }
       })();
 
       return true;
+    }
+
+    if (message.action === "generate-response") {
+      (async () => {
+        try {
+          const clerkToken = await getClerkToken();
+
+          if (!clerkToken) {
+            sendResponse({ ok: false, error: "Unauthorized request" });
+            return;
+          }
+
+          const response = await generateResponse(
+            message.question,
+            message.sectionId,
+            clerkToken,
+          );
+
+          sendResponse({ ok: true, response });
+        } catch (error) {
+          console.error(error);
+          if (error instanceof Error) {
+            sendResponse({ ok: false, error: error.message });
+          } else {
+            sendResponse({ ok: false, error: "An unexpected error occurred" });
+          }
+        }
+      })();
+
+      return true; // Keep the channel open
     }
   },
 );
@@ -109,7 +157,5 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   chrome.storage.local.set({ tabId: null });
 });
 
-// Register clerk token generator
-generateClerkToken();
 // Register tab capture listener
 setupTabCapture();

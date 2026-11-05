@@ -4,11 +4,15 @@ export interface PolicyMatchesResponse {
   policies: { id: string; name: string }[];
 }
 
-export async function fetchPolicyMatches(transcript: string) {
+export async function fetchPolicyMatches(
+  transcript: string,
+  clerkToken: string,
+) {
   const response = await fetch("http://localhost:3000/api/transcript", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${clerkToken}`,
     },
     body: JSON.stringify({ transcript }),
   });
@@ -25,7 +29,7 @@ export async function fetchPolicyMatches(transcript: string) {
 }
 
 export async function fetchRelevantSections(
-  question: string,
+  transcript: string,
   documentId: string,
   clerkToken: string,
 ) {
@@ -35,7 +39,7 @@ export async function fetchRelevantSections(
       Authorization: `Bearer ${clerkToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ transcript: question, documentId }),
+    body: JSON.stringify({ transcript, documentId }),
   });
 
   if (!response.ok) {
@@ -44,7 +48,32 @@ export async function fetchRelevantSections(
     throw new Error(errorData.error);
   }
 
-  const data: Section[] = await response.json();
+  const sections: Section[] = await response.json();
 
-  return data;
+  return sections;
+}
+
+export async function generateResponse(
+  question: string,
+  sectionId: string,
+  clerkToken: string,
+) {
+  const response = await fetch("http://localhost:3000/api/generate-response", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${clerkToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ transcript: question, sectionId }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+
+    throw new Error(errorData.error);
+  }
+
+  const responseData: string = await response.json();
+
+  return responseData;
 }

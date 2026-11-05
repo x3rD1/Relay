@@ -2,7 +2,7 @@ export type Message =
   | { action: "show-overlay" }
   | { action: "remove-overlay" }
   | { action: "content-ready" }
-  | { action: "start-capture"; clerkToken: string }
+  | { action: "start-capture" }
   | { action: "stop-capture" }
   | { action: "get-capture-status" }
   | { action: "capture-ended" }
@@ -13,12 +13,8 @@ export type Message =
   | { action: "get-transcript"; interactionId: string; transcript: string }
   | { action: "get-policies"; interactionId: string; policies: Policy[] }
   | { action: "policies-error"; interactionId: string }
-  | {
-      action: "retrieve-policy-sections";
-      clerkToken: string;
-      question: string;
-      documentId: string;
-    };
+  | { action: "retrieve-policy-sections"; question: string; documentId: string }
+  | { action: "generate-response"; question: string; sectionId: string };
 
 export type MsgResponse = {
   success: boolean;

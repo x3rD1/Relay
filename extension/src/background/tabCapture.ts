@@ -1,3 +1,4 @@
+import { getClerkToken } from "../auth/auth";
 import type { Message, SendResponse } from "../types/messages";
 import { getActiveTab } from "../utils/getActiveTab";
 
@@ -44,13 +45,20 @@ export function setupTabCapture() {
               return;
             }
 
+            const clerkToken = await getClerkToken();
+
+            if (!clerkToken) {
+              sendResponse({ ok: false, error: "Unauthorized request" });
+              return;
+            }
+
             const streamId = await chrome.tabCapture.getMediaStreamId({
               targetTabId: tab.id,
             });
 
             pendingCapture = {
               streamId,
-              clerkToken: message.clerkToken,
+              clerkToken,
             };
 
             const contexts = await chrome.runtime.getContexts({
@@ -76,7 +84,7 @@ export function setupTabCapture() {
             const response: SendResponse = await chrome.runtime.sendMessage({
               action: "consume-stream",
               streamId,
-              clerkToken: message.clerkToken,
+              clerkToken,
             });
 
             isStarting = false;
