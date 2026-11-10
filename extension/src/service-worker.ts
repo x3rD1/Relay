@@ -115,6 +115,29 @@ chrome.runtime.onMessage.addListener(
 
       return true; // Keep the channel open
     }
+
+    if (message.action === "get-clerkToken") {
+      (async () => {
+        try {
+          const token = await getClerkToken();
+
+          if (!token) {
+            throw new Error(
+              "Unauthorized request, missing Clerk authentication token",
+            );
+          }
+
+          sendResponse({ ok: true, token });
+        } catch (error) {
+          console.error(error);
+          if (error instanceof Error)
+            sendResponse({ ok: false, error: error.message });
+          else sendResponse({ ok: false, error: "Unknown error occured." });
+        }
+      })();
+
+      return true;
+    }
   },
 );
 

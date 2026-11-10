@@ -1,4 +1,3 @@
-import { getClerkToken } from "../auth/auth";
 import { fetchPolicyMatches } from "../services/policyService";
 
 let completedTurns: string[] = [];
@@ -112,13 +111,13 @@ export async function processLatestTranscript(
   interactionId: string,
 ) {
   try {
-    const clerkToken = await getClerkToken();
+    const clerkToken = await chrome.runtime.sendMessage({
+      action: "get-clerkToken",
+    });
 
-    if (!clerkToken) {
-      throw new Error("Missing Clerk authentication token");
-    }
+    if (!clerkToken.ok) throw new Error(clerkToken.error);
 
-    const response = await fetchPolicyMatches(fullTranscript, clerkToken);
+    const response = await fetchPolicyMatches(fullTranscript, clerkToken.token);
 
     chrome.runtime.sendMessage({
       action: "get-policies",
